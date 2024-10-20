@@ -1,9 +1,11 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-from .terrain import generate_reference_and_limits
-
+from terr import generate_reference_and_limits 
+#somehow if I dont change the name of the file, it keeps reporting error: ImportError: attempted relative import with no known parent package
+import math #temp, as suggested my copilot
 class Submarine:
     def __init__(self):
 
@@ -76,17 +78,15 @@ class Mission:
     @classmethod
     def from_csv(cls, file_name: str):
         # Use pandas to read the CSV file
-        data = pd.read_csv(file_path)
+        data = pd.read_csv(file_name)
         
         # Extract relevant columns (assuming the file has these columns)
-        references = data['reference'].values
-        cave_heights = data['cave_height'].values
-        cave_depths = data['cave_depth'].values
+        reference = data['reference'].values
+        cave_height = data['cave_height'].values
+        cave_depth = data['cave_depth'].values
         
         # Create a list of Mission objects
-        missions = [Mission(ref, height, depth) for ref, height, depth in zip(references, cave_heights, cave_depths)]
-        
-        return missions
+        return cls(reference, cave_height, cave_depth)
 
 class ClosedLoop:
     def __init__(self, plant: Submarine, controller):
@@ -102,11 +102,17 @@ class ClosedLoop:
         positions = np.zeros((T, 2))
         actions = np.zeros(T)
         self.plant.reset_state()
-
+        #initialize the controller
+        self.previous_error = 0 
+        self.controller.__init__(self,) 
         for t in range(T):
             positions[t] = self.plant.get_position()
             observation_t = self.plant.get_depth()
             # Call your controller here
+            reference_t = mission.reference[t]
+            control_action = self.controller.compute_control_action(self,reference_t, observation_t)
+            actions[t] = control_action
+            self.plant.transition(control_action, disturbances[t])        
             self.plant.transition(actions[t], disturbances[t])
 
         return Trajectory(positions)
