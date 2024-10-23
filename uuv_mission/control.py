@@ -1,5 +1,5 @@
 # control.py
-
+#the controller is implemented in this file
 class PDController:
     def __init__(self, kp=0.15, kd=0.6):#initialize the controller gains
         self.kp = kp

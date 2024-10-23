@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from terr import generate_reference_and_limits 
+from terrain import generate_reference_and_limits 
 #somehow if I dont change the name of the file, it keeps reporting error: ImportError: attempted relative import with no known parent package
 import math #temp, as suggested my copilot
 class Submarine:
@@ -108,12 +108,10 @@ class ClosedLoop:
         for t in range(T):
             positions[t] = self.plant.get_position()
             observation_t = self.plant.get_depth()
-            # Call your controller here
+            # Controller is called here
             reference_t = mission.reference[t]
             control_action = self.controller.compute_control_action(self,reference_t, observation_t)
-            actions[t] = control_action
-            self.plant.transition(control_action, disturbances[t])        
-            self.plant.transition(actions[t], disturbances[t])
+            self.plant.transition(control_action, disturbances[t]) 
 
         return Trajectory(positions)
         
